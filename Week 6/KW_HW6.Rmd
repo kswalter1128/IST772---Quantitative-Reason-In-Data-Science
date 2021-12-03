@@ -1,0 +1,86 @@
+---
+title: "Homework 6"
+author: "Kyle Walter"
+date: "5/20/2021"
+output: word_document
+---
+
+## 1. 
+```{r}
+summary(InsectSprays)
+str(InsectSprays)
+dim(InsectSprays)
+table(InsectSprays)
+```
+As we can see from the summary there are 6 seperate sprays which represent the independent variables and counts of 12 tests each with the number representing the number of dead insect observed, the dependent variabel, collected.
+
+## Problem 2. Perform ANOVA on insect sprays
+```{r}
+aovSpraysOut <- aov(count ~ spray, data = InsectSprays)
+summary(aovSpraysOut)
+```
+
+Next I ran an anova test to look at the variance among all the groups. 533.8 represents the mean variance between groups, while 15.4 represent the mean variance observed within the groups.
+
+## 3
+
+Also seen in the output from the anova in problem 2 is the F statistic. It is calculated by taking the mean square between the group and dividing it by the mean square within the groups. 533.8/15.4 = `r 533.8/15.4`. The F Value is quite large, usually values drop off substatially from 1 and by about 4 become very rare. Additionally next to the F value we have the Probability of F which is 2e-16 or virtually zero. Given an alpha of .05 with this value being less, we would reject the null hypothesis, and say there is statistical evidence point to the means of bugs killed by due to spray are not the same.
+
+## 4
+
+Calculating the degrees of Freedom works as follows. Starting with 72 for the number of observations in the spray data. We remove 1 from this, as a single observation is cannot be compared with anything. Then to figure the degrees of freedom within groups, we look at the independent variables, of which we have 6 different sprays. Similar to what was done with oberservations we remove 1 to get the degrees of freedom between groups as 5. Lastly to get the degrees of Freedom within groups we remove 5 from total degrees of Freedom 71 to get 66
+
+## Problem 5
+
+```{r}
+insectResults <- aov(count ~ spray, data = InsectSprays)
+summary(insectResults)
+```
+
+Similar to experiment results in problem 2, I ran the anova on the insect sprays data by the differnt sprays. The Null hypothesis would be that we expect to observer no difference in the average number of dead insects amoung the different sparys.
+
+The Alternative hypothesis would be that we would see support to show that the spray makes a difference in how many insects are killed.
+
+The anova results show an F signficance of 34.7 which is well above an F value of 1. This is further supported by the fact the P value is less than 2e-16 and smaller than the .05 that is used as a test threshold. This allows us to conclude based on the evidence that there is statistical support for the alternative hypothesis. We thus reject the null hypthosis.
+
+## 6. Perform bayes factor analysis on the insect sprays dataset
+
+```{r}
+library("BayesFactor")
+library("BEST")
+spraysBayesOut <- anovaBF(count ~ spray, data=InsectSprays)
+spraysBayesOut
+```
+
+The Bays Factor Anova shows us a large Bayes Factor, with a number above 500 showing signficant support of the Alternative Hypothesis, echoing what has been seen previously in the frequentist anova tests.
+
+### Generate posterior probabilities
+```{r}
+spraysMCMCOut <- posterior(spraysBayesOut,iterations=10000)
+summary(spraysMCMCOut)
+```
+
+In addition the monte carolo mean and standard deviation shows us the means of each spay and it's standard deviation. We can see that A, B, and F have significantly larger impact while C,D, and E all have smaller impact. None of them however pass through the zero. Continuing to support the alternative hypothesis.
+
+```{r}
+plot(spraysMCMCOut[,"mu"], main=NULL)
+boxplot(as.matrix(spraysMCMCOut[,2:7]))
+```
+Lastly, in a more visual view, we can see the HDI shows a range for teh entire group between 8 and 10.5 not passing through zero. And the box plots show all six sprays mean and deviation with none pass through zero all supporting the rjection of the null hypothesis.
+
+
+
+## Problem 7. Perform a Bayesian t-test between spray-C and spray-F
+```{r}
+CandF_obs <- InsectSprays[InsectSprays$spray=="C" | InsectSprays$spray=="F",]
+sprayC_obs <- InsectSprays[InsectSprays$spray=="C",1]
+sprayF_obs <- InsectSprays[InsectSprays$spray=="F",1]
+obs <-data.frame("C" = sprayC_obs, ".F" = sprayF_obs)
+# Perform a Bayes t-test against just the C and F sprays.
+plot(BESTmcmc(InsectSprays[InsectSprays$spray=="C",1],
+              InsectSprays[InsectSprays$spray=="F",1]))
+spray_BFOut <- anovaBF(count ~ spray, data=CandF_obs)
+summary(spray_BFOut)
+```
+
+Comparing the mean of spray C to spray F using the MCMC HDI we see that the model predicts that this a mean variance. The HDI ranges from -18.9 to -10.1 with the model suggesting a population mean difference around -14.5. None of the data passes through the null hypothesis where the mean variance would be 0, so based on the observation there is statistical support for rejecting the null hypothesis between Sprays C and F

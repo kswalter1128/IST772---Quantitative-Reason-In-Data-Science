@@ -1,0 +1,117 @@
+---
+title: "Homework 9"
+author: "Kyle Walter"
+date: "6/13/2021"
+output:
+  word_document: default
+  html_document: default
+---
+
+### Exercise #1
+The built-in data sets of R include one called "mtcars," which stands for Motor Trend cars. Motor Trend was the name of an automotive magazine and this data set contains information on cars from the 1970s. Use "?mtcars" to display help about the data set. 
+```{r}
+?mtcars
+```
+
+
+The data set includes a dichotomous variable called vs, which is coded as 0 for an engine with cylinders in a v-shape and 1 for so called "straight" engines. Use logistic regression to predict vs, using two metric variables in the data set, gear (number of forward gears) and hp (horsepower). Interpret the resulting null hypothesis significance tests.
+
+Create box plots of the relationship between the independent variables and the dependent variable
+
+```{r}
+par(mfrow=c(1,2))
+boxplot(gear ~ vs, data=mtcars, main="Top Gear vs. Engine Config.", col="orange") 
+boxplot(hp ~ vs, data=mtcars, main="Horsepower vs. Engine Config.", col="skyblue") 
+```
+
+```{r}
+glmOut <- glm(formula = vs ~ gear + hp, family = binomial(), data = mtcars)
+summary(glmOut)
+```
+
+#### Analysis:
+
+Looking at the signficance of the GLM outputs we see that both the intercept and the gear are above .05 at .0613 and .3907 respectively. Thus for these two variables we would fail to rect the null hypthosis as both lack the support required. For HP we have 0.0141 which is below the 0.05 and thus shows siginifican support.
+
+So in predicting whether or not we have a straight engine, which is represented by the value of 1, for each increase in horsepower, the log odds of a straight engine decreases by -0.08005.
+
+***
+### Exercise 5
+As noted in the chapter, the BaylorEdPsych add-in package contains a procedure for generating pseudo-Rsquared values from the output of the glm() procedure.Use the results of Exercise 1 to generate, report, and interpret a Nagelkerke
+
+```{r}
+library(BaylorEdPsych)
+PseudoR2(glmOut)
+```
+
+
+#### Analysis:
+The Nagelkerke value of 0.7789526 can be understand as the variance between the dependent value, in this case the VS in the mtcars data set, vs the independent variables of gear and hp.
+
+
+***
+### Exercise 6
+Continue the analysis of the Chile data set described in this chapter. The data set is in the "car" package, so you will have to install.packages() and library() that package first, and then use the data(Chile) command to get access to the data set. Pay close attention to the transformations needed to isolate cases with the Yes and No votes as shown in this chapter. Add a new predictor, statusquo, into the model and remove the income variable. Your new model specification should be vote ~ age + statusquo. The statusquo variable is a rating that each respondent gave indicating whether they preferred change or maintaining the status quo. Conduct general linear model and Bayesian analysis on this model and report and interpret all relevant results. Compare the AIC from this model to the AIC from the model that was developed in the chapter (using income and age as predictors).
+
+```{r}
+library(car)
+data(Chile)
+```
+
+
+
+transform Chile dataset
+```{r}
+ChileN=Chile[Chile$vote=='N',] # isolate yes votes
+ChileY=Chile[Chile$vote=='Y',] # isolate no votes
+ChileYN=rbind(ChileN, ChileY) # combine both yes and no
+ChileYN=ChileYN[complete.cases(ChileYN),] # get rid of missing data
+ChileYN$vote=factor(ChileYN$vote, levels=c("N", "Y")) # simplify the factor
+str(ChileYN)
+```
+linear
+
+```{r}
+chileGLM=glm(vote ~ age + statusquo, family=binomial(), data=ChileYN)
+summary(chileGLM)
+```
+transform coefficient from log-odds to regular odds
+
+
+```{r}
+exp(coef(chileGLM))
+```
+```{r}
+library(MCMCpack)
+ChileYN$vote=as.numeric(ChileYN$vote)-1 # adjust outcome variable
+ChileBayes=MCMClogit(formula=vote~ age + statusquo, data=ChileYN)
+summary(ChileBayes)
+```
+
+```{r}
+plot(ChileBayes)
+```
+
+#### Analysis
+In the frequentist view, the intercept and age variables both contain p-values well above the .05 alpha that we use to determin significance and thus we would fail to reject the null hypthosis and set them to zero. The statusquo however has a p-value that is virtually zero and well below that of .05 alpha and thus we would reject the null hypthosis that the log odds of predicting the outcome are zero.
+
+In reviewing the baysian outcome it supports the that of the frequentist outcome. Both the intercept and age HDI pass through zero, thus we would fail to reject the null hypthosis as there is statistical probability that intercept or age can be zero. However; the HDI does pass through zero for statusquo, it contains a median value 3.18546 and ranges from 2.91 to 3.486.
+
+Lastly we see that the book holds an AIC value of 2332 while the AIC value of this new test is 740.52. As the new model is able to lower the error rate with less complexity than the old model and as such we'd choose this model over the one in the text book.
+
+***
+### Exercise 7
+Bonus R code question: Develop your own custom function that will take the posterior distribution of a coefficient from the output object from an MCMClogit() analysis and automatically create a histogram of the posterior distributions of the coefficient in terms of regular odds (instead of log-odds). Make sure to mark vertical lines on the histogram indicating the boundaries of the 95% HDI.
+
+```{r}
+OddsHistogram <- function(mcmc_out, seq){
+  logOdds <- as.matrix(mcmc_out[,3])
+  odds <- apply(logOdds,1,exp)
+  hist(odds, col="skyblue", 
+       main="Histogram of Odds - Bayesian Analysis", 
+       xlab='odds')
+  abline(v=quantile(odds,c(0.025)),col='red')
+  abline(v=quantile(odds,c(0.975)),col='red')
+}
+OddsHistogram(ChileBayes, 3)
+```

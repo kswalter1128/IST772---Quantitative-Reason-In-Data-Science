@@ -1,0 +1,28 @@
+---
+title: "Week 4 Async"
+author: "Kyle Walter"
+date: "5/4/2021"
+output: html_document
+---
+
+```{r}
+sampSize <- 100
+
+x <- 0
+ttest <- NULL
+set.seed(11)
+while (x < 100) {
+  groupA <- rnorm(n=sampSize/2) 
+  groupB <- rnorm(n=sampSize/2) + 0.2 
+  tout <- t.test(groupA, groupB) 
+  ttest <- data.frame(lower=c(ttest$lower,tout$conf.int[1]), upper = c(ttest$upper,tout$conf.int[2]))
+  x <- x+1
+}
+y=0
+
+for (i in 1:x){
+  if(ttest$lower[i]<0 & ttest$upper[i]>0){y = y+1}
+}
+
+```
+

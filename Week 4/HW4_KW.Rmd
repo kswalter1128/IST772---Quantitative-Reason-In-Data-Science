@@ -1,0 +1,67 @@
+---
+title: "Homework 4"
+author: "Kyle Walter"
+date: "5/8/2021"
+output:
+  word_document: default
+  html_document: default
+---
+***
+Student Name: Kyle Walter
+Homework number: 4
+Date Due: May 9, 2021
+
+***
+## Question 6
+```{r}
+set.seed(5)
+t.test(rnorm(20, mean = 100, sd=10),rnorm(20,mean=100,sd=10))
+```
+
+The the middle of the confidence interval being approximately 6.97 away from the two extremes isn't surprising when both dataset have a standard deviation of 10, we'd expect the number to be somewhat close to that. Additionally, though not known in the real world, we know the population mean of 100 is caputured in the interval and difference of 6.97 would put 100 with in reach of both of the numbers.
+
+## Question 7
+```{r}
+data("PlantGrowth")
+summary(PlantGrowth)
+```
+
+We can see from the summary of the plantgrowth data there are three groups. Control, Trial 1, and Trail 2. Among all the plants the minimum weight is 3.590 and the max weight is 6.310 and the mean weight of 5.073 is slightly below the median mean the data set has a small skew to the left. We'll likely see more plants with higher weight but the lighter plants are pulling the mean down.
+
+Histograms
+```{r}
+hist(PlantGrowth$weight[PlantGrowth$group=="ctrl"])
+```
+
+```{r}
+hist(PlantGrowth$weight[PlantGrowth$group=="trt1"])
+```
+
+```{r}
+hist(PlantGrowth$weight[PlantGrowth$group=="trt2"])
+```
+
+We can see from the graphs that Treatment 1 seems to product lighter plants with 8 of the observations below both the mean and median.
+
+## Question 8
+```{r}
+boxplot(PlantGrowth$weight~PlantGrowth$group)
+```
+
+Continuing our review of the data. Over 3 quartiles of the data for treatment one in the sample in less than the median of the Control group. While almost the opposite appears true for the treatment 2. Based on the data we would induce that Treatment 1 appears to reduce the growth of the plants while treatment 2 appears to enhance the growth patterns. 
+
+## Question 9
+
+Let's use a T-Test to see if their means are such to say based on the data of control group and treatment 1.
+```{r}
+t.test(PlantGrowth$weight[PlantGrowth$group=="ctrl"], PlantGrowth$weight[PlantGrowth$group=="trt1"])
+```
+Based on the outcome the population means is between -.28 and 1.02 from the observed means. The center point is .371. Since the interval travels through zero the confidence interval points to the fact that these two means are likely not statically different. Therefor we can induce from the samples that treatment 1 is has not had an impact on the plant growth.
+
+## Question 10
+
+Similar to what we did with Control verses Treatment 1 let's see if the data points to a significant difference between the Control Group and Treatment 2
+```{r}
+t.test(PlantGrowth$weight[PlantGrowth$group=="ctrl"], PlantGrowth$weight[PlantGrowth$group=="trt2"])
+```
+The middle of the confidence interval is `r (-.98287213+-.00512787)/2`. Unlike the control and treatment 1, control and treatment 2's confidence interval does not travel through zero and as such sample observation it statistically significant to induce the idea that Treatment 2 is having an impact on the growth of the plants.

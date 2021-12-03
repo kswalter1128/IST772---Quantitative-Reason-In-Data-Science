@@ -1,0 +1,17 @@
+---
+title: "Week 1 Async"
+author: "Kyle"
+date: "4/13/2021"
+output: html_document
+---
+
+#Introduction
+R is the prefered program for this course. Shouldn't be using Python. This class is inferential in nature so need to be able to approach the problem.
+
+##Logistics
+There are two platforms,
+1. 2U - Offical Announcements will be here in the Wall (note to self to check the settings to make sure you're getting notices, Dr. Block has a number of posted items. Some I've seen so I haven't)
+
+The other items is the Grade Book in 2SU. Like other classes submit homwork to the LMS and the professor will post grades here.
+
+2. Microsoft Teams - 

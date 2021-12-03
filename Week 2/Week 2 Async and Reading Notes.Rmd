@@ -1,0 +1,103 @@
+---
+title: "Week 2 Async and Reading"
+author: "Kyle Walter"
+date: "4/18/2021"
+output: html_document
+---
+
+## Exercises from the reading
+
+Below are the exercises from the reading. Did learn a useful function in this part of the book
+margin.table()
+
+### Make your own tables with R
+Create a two-column, two-row structure using the matrix() command.
+This lie of code files the cells row-by-row, so the first row gets 2 and 1 and the the second row gets 3 and 4
+
+
+```{r}
+toast <-  matrix(c(2,1,3,4), ncol=2, byrow = T)
+colnames(toast) <- c("Down","Up")
+rownames(toast) <- c("Jelly","Butter")
+toast <- as.table(toast)
+toast
+```
+
+```{r}
+margin.table(toast)
+margin.table(toast,1)
+margin.table(toast,2)
+toastProbs <- toast/margin.table(toast)
+toastProbs
+```
+
+### Exercises
+
+Use the table to determine who is most likely to be your server on saturday and what is like likelihood that that the person will be you server
+
+```{r}
+ServiceMatrix <- matrix(c(6,0,8,4,8,8,0,0,6,5,6,8,10,3,5,6,0,5,5,8,6,8,0,8,8,8,8,0), ncol = 4)
+colnames(ServiceMatrix) <- c("Anne","Bill","Calvin","Devon")
+rownames(ServiceMatrix) <- c("M","T","W","R","F","S","Sun")
+margin.table(ServiceMatrix)
+margin.table(ServiceMatrix, 1)
+margin.table(ServiceMatrix,2)
+```
+
+Next We'll normalize the data
+```{r}
+ServiceProb<- ServiceMatrix/margin.table(ServiceMatrix)
+ServiceProb
+```
+
+Next that we can see who we're most likely to have on saturday by eyeing the normalized set of data above, let's figure out on Saturday how likely it is we'll have bill
+```{r}
+ServiceProb <- as.data.frame(ServiceProb)
+billSched <- as.matrix(ServiceProb[,2])
+billProb <- billSched/margin.table(billSched)
+billProb
+```
+
+Now using the same data table, who is most likely to be our server on Monday, looks like Devon, now what is likeily hood that it is Devon
+```{r}
+devonSched <- as.matrix(ServiceProb[1,])
+devonProb <- devonSched/margin.table(devonSched)
+devonProb
+```
+### Ploting Random Distributions
+
+```{r}
+Test <- rbinom(n = 20, size = 6, prob = .5)
+hist(Test)
+```
+
+#### 2.5.2 Plotting Random Distributions
+
+Running a larger distribution look at the probability
+```{r}
+largDist <- rbinom(n =100, size = 6, prob=.5)
+table(largDist) #Creates a table of the outcome events
+
+probTable <- table(largDist)/100 #divides by total possible events
+cumsum(probTable) #cumulatively adds the probability to 1
+barplot(cumsum(probTable)) #shows cumsum as barplot
+```
+
+### 2.6 Histograms, Tables, and Barplots
+#### 2.6.1
+Histogram - Frequency plot that summarizes numeric data
+Algorithm decides in base R how many bins are needed, but can be user defined with binwidth argument
+
+```{r}
+#very simple same in the code
+hist(c(1,1,2,2,2))
+
+```
+
+```{r}
+
+#Run this code and observe the results
+#What is the probablity of 3 Jelly Down events
+table( rbinom(n=100000, size=6, prob=0.5) )/100000
+```
+
